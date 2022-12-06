@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.types import StructType, IntegerType, BooleanType,DoubleType
+from pyspark.sql.types import StructType, IntegerType, BooleanType, DoubleType
 import os.path
 import yaml
 
@@ -10,11 +10,12 @@ if __name__ == '__main__':
         .appName("Read Files") \
         .config('spark.jars.packages', 'org.apache.hadoop:hadoop-aws:2.7.4') \
         .getOrCreate()
-        # .master('local[*]') \
+    # .master('local[*]') \
     spark.sparkContext.setLogLevel('ERROR')
 
     current_dir = os.path.abspath(os.path.dirname(__file__))
-    app_config_path = os.path.abspath(current_dir + "/../../../" + "application.yml")
+    app_config_path = os.path.abspath(
+        current_dir + "/../../../" + "application.yml")
     app_secrets_path = os.path.abspath(current_dir + "/../../../" + ".secrets")
 
     conf = open(app_config_path)
@@ -25,7 +26,8 @@ if __name__ == '__main__':
     # Setup spark to use s3
     hadoop_conf = spark.sparkContext._jsc.hadoopConfiguration()
     hadoop_conf.set("fs.s3a.access.key", app_secret["s3_conf"]["access_key"])
-    hadoop_conf.set("fs.s3a.secret.key", app_secret["s3_conf"]["secret_access_key"])
+    hadoop_conf.set("fs.s3a.secret.key",
+                    app_secret["s3_conf"]["secret_access_key"])
 
     print("\nCreating dataframe ingestion CSV file using 'SparkSession.read.format()'")
 
@@ -60,10 +62,18 @@ if __name__ == '__main__':
     finance_df.printSchema()
     finance_df.show()
 
+    # finance_df \
+    #     .repartition(2) \
+    #     .write \
+    #     .partitionBy("id") \
+    #     .mode("overwrite") \
+    #     .option("header", "true") \
+    #     .option("delimiter", "~") \
+    #     .csv("s3a://" + app_conf["s3_conf"]["s3_bucket"] + "/fin")
+
     finance_df \
         .repartition(2) \
         .write \
-        .partitionBy("id") \
         .mode("overwrite") \
         .option("header", "true") \
         .option("delimiter", "~") \
