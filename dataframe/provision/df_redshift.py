@@ -62,6 +62,7 @@ if __name__ == '__main__':
         .option("url", jdbc_url) \
         .option("driver", 'com.amazon.redshift.jdbc42.Driver') \
         .option("tempdir", "s3a://" + app_conf["s3_conf"]["s3_bucket"] + "/temp") \
+        .option("forward_spark_s3_credentials", "true") \
         .option("dbtable", "PUBLIC.TXN_FCT") \
         .option("user", app_secret["redshift_conf"]["username"]) \
         .option("password", app_secret["redshift_conf"]["password"]) \
