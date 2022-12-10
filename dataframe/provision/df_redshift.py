@@ -20,7 +20,8 @@ if __name__ == '__main__':
     spark.sparkContext.setLogLevel('ERROR')
 
     current_dir = os.path.abspath(os.path.dirname(__file__))
-    app_config_path = os.path.abspath(current_dir + "/../../" + "application.yml")
+    app_config_path = os.path.abspath(
+        current_dir + "/../../" + "application.yml")
     app_secrets_path = os.path.abspath(current_dir + "/../../" + ".secrets")
 
     conf = open(app_config_path)
@@ -31,7 +32,8 @@ if __name__ == '__main__':
     # Setup spark to use s3
     hadoop_conf = spark.sparkContext._jsc.hadoopConfiguration()
     hadoop_conf.set("fs.s3a.access.key", app_secret["s3_conf"]["access_key"])
-    hadoop_conf.set("fs.s3a.secret.key", app_secret["s3_conf"]["secret_access_key"])
+    hadoop_conf.set("fs.s3a.secret.key",
+                    app_secret["s3_conf"]["secret_access_key"])
 
     print("\nCreating Dataframe ingestion txn_fact dataset,")
     txn_df = spark.read\
@@ -46,12 +48,23 @@ if __name__ == '__main__':
     jdbc_url = ut.get_redshift_jdbc_url(app_secret)
     print(jdbc_url)
 
+    # txn_df.coalesce(1).write\
+    #     .format("io.github.spark_redshift_community.spark.redshift") \
+    #     .option("url", jdbc_url) \
+    #     .option("tempdir", "s3a://" + app_conf["s3_conf"]["s3_bucket"] + "/temp") \
+    #     .option("forward_spark_s3_credentials", "true") \
+    #     .option("dbtable", "PUBLIC.TXN_FCT") \
+    #     .mode("overwrite")\
+    #     .save()
+
     txn_df.coalesce(1).write\
         .format("io.github.spark_redshift_community.spark.redshift") \
         .option("url", jdbc_url) \
+        .option("driver", 'com.amazon.redshift.jdbc42.Driver') \
         .option("tempdir", "s3a://" + app_conf["s3_conf"]["s3_bucket"] + "/temp") \
-        .option("forward_spark_s3_credentials", "true") \
         .option("dbtable", "PUBLIC.TXN_FCT") \
+        .option("user", app_secret["redshift_conf"]["username"]) \
+        .option("password", app_secret["redshift_conf"]["password"]) \
         .mode("overwrite")\
         .save()
 
