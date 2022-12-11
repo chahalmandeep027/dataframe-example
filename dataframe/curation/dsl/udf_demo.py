@@ -37,9 +37,9 @@ if __name__ == '__main__':
         .register("initcap", lambda line, delimiter: ' '.join(list(map(str.capitalize, line.split(delimiter)))), StringType())
 
     sampleDf.select("id",
-                    initcap_udf1("").alias("text1"),
-                    initcap_udf2("").alias("text2"),
-                    initcap_udf3("").alias("text3"),
+                    initcap_udf1("text").alias("text1"),
+                    initcap_udf2("text").alias("text2"),
+                    initcap_udf3("text").alias("text3"),
                     initcap_udf4("text", lit(" ")).alias("text4")
                     )\
         .show(5, False)
